@@ -770,8 +770,29 @@
         </div>
 
         <div class="chart-card" style="margin-bottom:1.25rem;">
-          <h3>Por cultivo</h3>
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.25rem; padding-bottom:0.75rem; border-bottom:1px solid var(--crema-oscura);">
+            <h3 style="margin:0; padding:0; border:none;">Por cultivo</h3>
+            <button onclick="abrirColorEditor()" style="display:flex; align-items:center; gap:0.4rem; padding:0.35rem 0.85rem; background:var(--crema); border:1.5px solid var(--crema-oscura); border-radius:8px; font-family:'Source Sans 3',sans-serif; font-size:0.82rem; font-weight:600; color:var(--texto-suave); cursor:pointer; transition:border-color 0.2s, color 0.2s;" onmouseover="this.style.borderColor='var(--verde-claro)';this.style.color='var(--verde-oscuro)'" onmouseout="this.style.borderColor='var(--crema-oscura)';this.style.color='var(--texto-suave)'">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="4" cy="4" r="3" fill="#4a8c3f"/><circle cx="12" cy="4" r="3" fill="#c49a2e"/><circle cx="4" cy="12" r="3" fill="#2d5a25"/><circle cx="12" cy="12" r="3" fill="#8b6914"/></svg>
+              Colores
+            </button>
+          </div>
           <div class="chart-wrap"><canvas id="chart-cultivo"></canvas></div>
+        </div>
+
+        <!-- MODAL COLORES -->
+        <div id="color-modal-overlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:1000; align-items:center; justify-content:center;" onclick="if(event.target===this)cerrarColorEditor()">
+          <div style="background:var(--blanco-roto); border-radius:20px; padding:2rem; width:100%; max-width:420px; box-shadow:0 24px 64px rgba(0,0,0,0.3); max-height:85vh; overflow-y:auto;">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem;">
+              <h3 style="font-family:'Playfair Display',serif; font-size:1.2rem; color:var(--verde-oscuro); margin:0;">Colores por cultivo</h3>
+              <button onclick="cerrarColorEditor()" style="background:none; border:none; font-size:1.4rem; cursor:pointer; color:var(--texto-suave); line-height:1;">×</button>
+            </div>
+            <div id="color-editor-list" style="display:flex; flex-direction:column; gap:0.65rem;"></div>
+            <div style="display:flex; gap:0.75rem; margin-top:1.5rem;">
+              <button onclick="resetearColores()" style="flex:1; padding:0.65rem; background:var(--crema); border:1.5px solid var(--crema-oscura); border-radius:8px; font-family:'Source Sans 3',sans-serif; font-size:0.88rem; color:var(--texto-suave); cursor:pointer;">Restablecer</button>
+              <button onclick="aplicarColores()" style="flex:2; padding:0.65rem; background:var(--verde-oscuro); border:none; border-radius:8px; font-family:'Source Sans 3',sans-serif; font-size:0.88rem; font-weight:600; color:white; cursor:pointer;">Aplicar colores</button>
+            </div>
+          </div>
         </div>
 
         <div class="chart-card" style="margin-bottom:1.25rem;">
@@ -818,6 +839,82 @@ const NUMEROS = [1,2,3,4];
 let supabaseClient = null;
 let granularidad = 'mes';
 let chartPrincipal = null, chartCultivo = null, chartTipo = null;
+let lastData = [];
+
+const CULTIVOS_DEFAULT = {
+  'Tomate': '#e85d3a',
+  'Melón': '#f0a500',
+  'Sandía Injertada': '#c23b5e',
+  'Sandía': '#e84068',
+  'Pepino': '#5c9e50',
+  'Pimiento': '#d94f1e',
+  'Berenjena': '#6b3fa0',
+  'Calabacín': '#7ab870',
+  'Lechuga': '#4a8c3f',
+  'Albahaca': '#2d5a25'
+};
+
+function getCultivoColores() {
+  const saved = localStorage.getItem('cultivo_colores');
+  return saved ? { ...CULTIVOS_DEFAULT, ...JSON.parse(saved) } : { ...CULTIVOS_DEFAULT };
+}
+
+function getCultivoColor(cultivo) {
+  const mapa = getCultivoColores();
+  return mapa[cultivo] || '#4a8c3f';
+}
+
+function abrirColorEditor() {
+  const mapa = getCultivoColores();
+  const cultivosEnDatos = lastData.length ? [...new Set(lastData.map(r => r.cultivo))] : Object.keys(CULTIVOS_DEFAULT);
+  const list = document.getElementById('color-editor-list');
+  list.innerHTML = cultivosEnDatos.map(c => `
+    <div style="display:flex; align-items:center; gap:0.85rem; padding:0.55rem 0.75rem; background:white; border:1px solid var(--crema-oscura); border-radius:8px;">
+      <input type="color" id="col-${CSS.escape(c)}" value="${mapa[c] || '#4a8c3f'}" style="width:36px; height:36px; border:none; border-radius:6px; cursor:pointer; padding:2px; background:none;" />
+      <span style="font-size:0.92rem; font-weight:500; color:var(--texto); flex:1;">${c}</span>
+      <div style="width:28px; height:28px; border-radius:50%; background:${mapa[c] || '#4a8c3f'}; border:2px solid white; box-shadow:0 0 0 1px rgba(0,0,0,0.1);" id="preview-${CSS.escape(c)}"></div>
+    </div>
+  `).join('');
+
+  cultivosEnDatos.forEach(c => {
+    const input = document.getElementById('col-' + CSS.escape(c));
+    if (input) input.addEventListener('input', e => {
+      const preview = document.getElementById('preview-' + CSS.escape(c));
+      if (preview) preview.style.background = e.target.value;
+    });
+  });
+
+  document.getElementById('color-modal-overlay').style.display = 'flex';
+}
+
+function cerrarColorEditor() {
+  document.getElementById('color-modal-overlay').style.display = 'none';
+}
+
+function aplicarColores() {
+  const mapa = getCultivoColores();
+  const cultivosEnDatos = lastData.length ? [...new Set(lastData.map(r => r.cultivo))] : Object.keys(CULTIVOS_DEFAULT);
+  cultivosEnDatos.forEach(c => {
+    const input = document.getElementById('col-' + CSS.escape(c));
+    if (input) mapa[c] = input.value;
+  });
+  localStorage.setItem('cultivo_colores', JSON.stringify(mapa));
+  cerrarColorEditor();
+  if (lastData.length) renderChartCultivo(lastData);
+}
+
+function resetearColores() {
+  localStorage.removeItem('cultivo_colores');
+  const cultivosEnDatos = lastData.length ? [...new Set(lastData.map(r => r.cultivo))] : Object.keys(CULTIVOS_DEFAULT);
+  cultivosEnDatos.forEach(c => {
+    const input = document.getElementById('col-' + CSS.escape(c));
+    if (input) {
+      input.value = CULTIVOS_DEFAULT[c] || '#4a8c3f';
+      const preview = document.getElementById('preview-' + CSS.escape(c));
+      if (preview) preview.style.background = input.value;
+    }
+  });
+}
 
 // ─── SUPABASE CONFIG ───
 const SB_URL = 'https://jxzujjbdeycgbaaypdyp.supabase.co';
@@ -1015,6 +1112,7 @@ async function cargarDashboard() {
   document.getElementById('kpi-periodo').textContent = 'año ' + anio;
 
   // Gráfico principal
+  lastData = data;
   renderChartPrincipal(data, anio);
   renderChartCultivo(data);
   renderChartTipo(data);
@@ -1084,16 +1182,23 @@ function renderChartCultivo(data) {
   data.forEach(r => { grupos[r.cultivo] = (grupos[r.cultivo] || 0) + r.num_bandejas; });
   const labels = Object.keys(grupos);
   const values = labels.map(k => grupos[k]);
-  const colores = ['#4a8c3f','#7ab870','#2d5a25','#c49a2e','#8b6914','#5c9e50','#a3d695','#1f3d1a','#e6c96a','#3d7032'];
+  const mapa = getCultivoColores();
+  const colores = labels.map(l => mapa[l] || '#4a8c3f');
 
   if (chartCultivo) chartCultivo.destroy();
   const ctx = document.getElementById('chart-cultivo').getContext('2d');
   chartCultivo = new Chart(ctx, {
     type: 'doughnut',
-    data: { labels, datasets: [{ data: values, backgroundColor: colores.slice(0, labels.length), borderWidth: 2, borderColor: '#faf8f4' }] },
+    data: { labels, datasets: [{ data: values, backgroundColor: colores, borderWidth: 2, borderColor: '#faf8f4' }] },
     options: {
       responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { position: 'bottom', labels: { font: { size: 11 }, padding: 12, boxWidth: 12 } } }
+      plugins: { legend: { position: 'bottom', labels: {
+        font: { size: 11 }, padding: 12, boxWidth: 12,
+        generateLabels: chart => chart.data.labels.map((label, i) => ({
+          text: label, fillStyle: chart.data.datasets[0].backgroundColor[i],
+          strokeStyle: '#faf8f4', lineWidth: 2, index: i
+        }))
+      }}}
     }
   });
 }
