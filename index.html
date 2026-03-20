@@ -1341,18 +1341,66 @@ function renderChartCultivo(data) {
 
   if (chartCultivo) chartCultivo.destroy();
   const ctx = document.getElementById('chart-cultivo').getContext('2d');
+
+  const strikethroughPlugin = {
+    id: 'strikethroughLegend',
+    afterDraw(chart) {
+      const legend = chart.legend;
+      if (!legend || !legend.legendItems) return;
+      const ctx2 = chart.ctx;
+      legend.legendItems.forEach((item) => {
+        if (!item.hidden) return;
+        const i = item.index;
+        const hitBox = legend.legendHitBoxes[i];
+        if (!hitBox) return;
+        ctx2.save();
+        ctx2.strokeStyle = '#888';
+        ctx2.lineWidth = 1.2;
+        const textX = hitBox.left + (item.boxWidth || 12) + 8;
+        const textY = hitBox.top + hitBox.height / 2;
+        const textW = hitBox.width - (item.boxWidth || 12) - 8;
+        ctx2.beginPath();
+        ctx2.moveTo(textX, textY);
+        ctx2.lineTo(textX + textW, textY);
+        ctx2.stroke();
+        ctx2.restore();
+      });
+    }
+  };
+
   chartCultivo = new Chart(ctx, {
     type: 'doughnut',
     data: { labels, datasets: [{ data: values, backgroundColor: colores, borderWidth: 2, borderColor: '#faf8f4' }] },
+    plugins: [strikethroughPlugin],
     options: {
       responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { position: 'bottom', labels: {
-        font: { size: 11 }, padding: 12, boxWidth: 12,
-        generateLabels: chart => chart.data.labels.map((label, i) => ({
-          text: label, fillStyle: chart.data.datasets[0].backgroundColor[i],
-          strokeStyle: '#faf8f4', lineWidth: 2, index: i
-        }))
-      }}}
+      plugins: { legend: { position: 'bottom',
+        onClick(e, legendItem, legend) {
+          const i = legendItem.index;
+          const meta = legend.chart.getDatasetMeta(0);
+          meta.data[i].hidden = !meta.data[i].hidden;
+          legendItem.hidden = meta.data[i].hidden;
+          legend.chart.update();
+        },
+        labels: {
+          font: { size: 11 }, padding: 12, boxWidth: 12,
+          generateLabels(chart) {
+            const meta = chart.getDatasetMeta(0);
+            return chart.data.labels.map((label, i) => {
+              const hidden = meta.data[i] && meta.data[i].hidden;
+              return {
+                text: hidden ? label : label,
+                fillStyle: hidden ? '#ccc' : chart.data.datasets[0].backgroundColor[i],
+                strokeStyle: '#faf8f4',
+                lineWidth: 2,
+                index: i,
+                hidden,
+                fontColor: hidden ? '#aaa' : '#444'
+              };
+            });
+          }
+        }
+      }}
     }
   });
 }
