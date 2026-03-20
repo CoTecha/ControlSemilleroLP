@@ -626,6 +626,13 @@
             <p>Visualizar datos por semanas, meses y años con totales</p>
           </div>
         </div>
+        <div class="menu-card" onclick="showPage('gestion')">
+          <div class="menu-icon" style="background:#f0eaf8;">⚙️</div>
+          <div class="menu-card-text">
+            <h3>Gestión de datos</h3>
+            <p>Administrar cultivos, ubicaciones y tipos de bandeja</p>
+          </div>
+        </div>
         <div class="menu-card disabled">
           <div class="menu-icon icon-azul">🗺️</div>
           <div class="menu-card-text">
@@ -663,19 +670,7 @@
         <div class="form-row">
           <div class="form-group">
             <label>Cultivo</label>
-            <select id="r-cultivo">
-              <option value="">Seleccionar cultivo</option>
-              <option>Tomate</option>
-              <option>Melón</option>
-              <option>Sandía Injertada</option>
-              <option>Sandía</option>
-              <option>Pepino</option>
-              <option>Pimiento</option>
-              <option>Berenjena</option>
-              <option>Calabacín</option>
-              <option>Lechuga</option>
-              <option>Albahaca</option>
-            </select>
+            <select id="r-cultivo"><option value="">Seleccionar cultivo</option></select>
           </div>
           <div class="form-group">
             <label>Número de bandejas</label>
@@ -684,12 +679,7 @@
         </div>
         <div class="form-group">
           <label>Tipo de bandeja</label>
-          <select id="r-tipo">
-            <option value="">Seleccionar tipo</option>
-            <option value="75">75 alvéolos</option>
-            <option value="150">150 alvéolos</option>
-            <option value="294">294 alvéolos</option>
-          </select>
+          <select id="r-tipo"><option value="">Seleccionar tipo</option></select>
         </div>
         <div class="form-group">
           <label>Comentarios</label>
@@ -721,19 +711,7 @@
           <label>Año</label>
           <select id="filtro-anio" onchange="cargarDashboard()"></select>
           <label>Cultivo</label>
-          <select id="filtro-cultivo" onchange="cargarDashboard()">
-            <option value="">Todos</option>
-            <option>Tomate</option>
-            <option>Melón</option>
-            <option>Sandía Injertada</option>
-            <option>Sandía</option>
-            <option>Pepino</option>
-            <option>Pimiento</option>
-            <option>Berenjena</option>
-            <option>Calabacín</option>
-            <option>Lechuga</option>
-            <option>Albahaca</option>
-          </select>
+          <select id="filtro-cultivo" onchange="cargarDashboard()"><option value="">Todos</option></select>
           <label>Ubicación</label>
           <select id="filtro-ubicacion" onchange="cargarDashboard()">
             <option value="">Todas</option>
@@ -770,29 +748,8 @@
         </div>
 
         <div class="chart-card" style="margin-bottom:1.25rem;">
-          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.25rem; padding-bottom:0.75rem; border-bottom:1px solid var(--crema-oscura);">
-            <h3 style="margin:0; padding:0; border:none;">Por cultivo</h3>
-            <button onclick="abrirColorEditor()" style="display:flex; align-items:center; gap:0.4rem; padding:0.35rem 0.85rem; background:var(--crema); border:1.5px solid var(--crema-oscura); border-radius:8px; font-family:'Source Sans 3',sans-serif; font-size:0.82rem; font-weight:600; color:var(--texto-suave); cursor:pointer; transition:border-color 0.2s, color 0.2s;" onmouseover="this.style.borderColor='var(--verde-claro)';this.style.color='var(--verde-oscuro)'" onmouseout="this.style.borderColor='var(--crema-oscura)';this.style.color='var(--texto-suave)'">
-              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="4" cy="4" r="3" fill="#4a8c3f"/><circle cx="12" cy="4" r="3" fill="#c49a2e"/><circle cx="4" cy="12" r="3" fill="#2d5a25"/><circle cx="12" cy="12" r="3" fill="#8b6914"/></svg>
-              Colores
-            </button>
-          </div>
+          <h3>Por cultivo</h3>
           <div class="chart-wrap"><canvas id="chart-cultivo"></canvas></div>
-        </div>
-
-        <!-- MODAL COLORES -->
-        <div id="color-modal-overlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:1000; align-items:center; justify-content:center;" onclick="if(event.target===this)cerrarColorEditor()">
-          <div style="background:var(--blanco-roto); border-radius:20px; padding:2rem; width:100%; max-width:420px; box-shadow:0 24px 64px rgba(0,0,0,0.3); max-height:85vh; overflow-y:auto;">
-            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem;">
-              <h3 style="font-family:'Playfair Display',serif; font-size:1.2rem; color:var(--verde-oscuro); margin:0;">Colores por cultivo</h3>
-              <button onclick="cerrarColorEditor()" style="background:none; border:none; font-size:1.4rem; cursor:pointer; color:var(--texto-suave); line-height:1;">×</button>
-            </div>
-            <div id="color-editor-list" style="display:flex; flex-direction:column; gap:0.65rem;"></div>
-            <div style="display:flex; gap:0.75rem; margin-top:1.5rem;">
-              <button onclick="resetearColores()" style="flex:1; padding:0.65rem; background:var(--crema); border:1.5px solid var(--crema-oscura); border-radius:8px; font-family:'Source Sans 3',sans-serif; font-size:0.88rem; color:var(--texto-suave); cursor:pointer;">Restablecer</button>
-              <button onclick="aplicarColores()" style="flex:2; padding:0.65rem; background:var(--verde-oscuro); border:none; border-radius:8px; font-family:'Source Sans 3',sans-serif; font-size:0.88rem; font-weight:600; color:white; cursor:pointer;">Aplicar colores</button>
-            </div>
-          </div>
         </div>
 
         <div class="chart-card" style="margin-bottom:1.25rem;">
@@ -831,6 +788,152 @@
     </div>
   </div>
 
+  <!-- GESTIÓN -->
+  <div id="gestion-inner" class="inner-page">
+    <div class="page-header">
+      <button class="btn-back" onclick="showPage('menu')">← Menú</button>
+      <h2>Gestión de datos</h2>
+    </div>
+    <div class="content" style="max-width:700px; margin:0 auto; padding:2rem 1.5rem;">
+
+      <!-- TABS gestión -->
+      <div class="tabs" style="margin-bottom:1.5rem;">
+        <button class="tab active" id="gtab-cultivos" onclick="switchGTab('cultivos')">Cultivos</button>
+        <button class="tab" id="gtab-ubicaciones" onclick="switchGTab('ubicaciones')">Ubicaciones</button>
+        <button class="tab" id="gtab-tipos" onclick="switchGTab('tipos')">Tipos bandeja</button>
+        <button class="tab" id="gtab-registros" onclick="switchGTab('registros')">Registros</button>
+      </div>
+
+      <!-- CULTIVOS -->
+      <div id="gsec-cultivos">
+        <div class="form-card" style="margin-bottom:1.25rem;">
+          <div style="display:flex; gap:0.75rem; align-items:flex-end; flex-wrap:wrap;">
+            <div class="form-group" style="flex:2; min-width:140px; margin:0;">
+              <label>Nombre del cultivo</label>
+              <input type="text" id="g-cultivo-nombre" placeholder="Ej: Puerro" />
+            </div>
+            <div class="form-group" style="margin:0;">
+              <label>Color</label>
+              <input type="color" id="g-cultivo-color" value="#4a8c3f" style="height:42px; width:56px; border:1.5px solid var(--crema-oscura); border-radius:var(--radio); padding:3px; cursor:pointer;" />
+            </div>
+            <button class="btn-primary" style="width:auto; padding:0.75rem 1.25rem; white-space:nowrap;" onclick="addCultivo()">+ Añadir</button>
+          </div>
+        </div>
+        <div class="chart-card" style="padding:0;">
+          <div id="lista-cultivos" style="padding:0.5rem 0;"><div class="loading-spinner">Cargando…</div></div>
+        </div>
+      </div>
+
+      <!-- UBICACIONES -->
+      <div id="gsec-ubicaciones" style="display:none;">
+        <div class="form-card" style="margin-bottom:1.25rem;">
+          <div style="display:flex; gap:0.75rem; align-items:flex-end; flex-wrap:wrap;">
+            <div class="form-group" style="flex:1; min-width:100px; margin:0;">
+              <label>Código (ej: A1)</label>
+              <input type="text" id="g-ubi-codigo" placeholder="Z5" style="text-transform:uppercase;" />
+            </div>
+            <div class="form-group" style="flex:2; min-width:140px; margin:0;">
+              <label>Descripción (opcional)</label>
+              <input type="text" id="g-ubi-desc" placeholder="Invernadero norte" />
+            </div>
+            <button class="btn-primary" style="width:auto; padding:0.75rem 1.25rem; white-space:nowrap;" onclick="addUbicacion()">+ Añadir</button>
+          </div>
+        </div>
+        <div class="chart-card" style="padding:0;">
+          <div id="lista-ubicaciones" style="padding:0.5rem 0;"><div class="loading-spinner">Cargando…</div></div>
+        </div>
+      </div>
+
+      <!-- TIPOS BANDEJA -->
+      <div id="gsec-tipos" style="display:none;">
+        <div class="form-card" style="margin-bottom:1.25rem;">
+          <div style="display:flex; gap:0.75rem; align-items:flex-end; flex-wrap:wrap;">
+            <div class="form-group" style="flex:1; min-width:100px; margin:0;">
+              <label>Alvéolos</label>
+              <input type="number" id="g-tipo-alv" placeholder="360" min="1" />
+            </div>
+            <div class="form-group" style="flex:2; min-width:140px; margin:0;">
+              <label>Descripción (opcional)</label>
+              <input type="text" id="g-tipo-desc" placeholder="Bandeja extra grande" />
+            </div>
+            <button class="btn-primary" style="width:auto; padding:0.75rem 1.25rem; white-space:nowrap;" onclick="addTipo()">+ Añadir</button>
+          </div>
+        </div>
+        <div class="chart-card" style="padding:0;">
+          <div id="lista-tipos" style="padding:0.5rem 0;"><div class="loading-spinner">Cargando…</div></div>
+        </div>
+      </div>
+
+      <!-- REGISTROS -->
+      <div id="gsec-registros" style="display:none;">
+        <div class="form-card" style="margin-bottom:1.25rem;">
+          <div style="display:flex; gap:0.75rem; align-items:flex-end; flex-wrap:wrap;">
+            <div class="form-group" style="flex:1; min-width:110px; margin:0;">
+              <label>Desde</label>
+              <input type="date" id="gr-desde" />
+            </div>
+            <div class="form-group" style="flex:1; min-width:110px; margin:0;">
+              <label>Hasta</label>
+              <input type="date" id="gr-hasta" />
+            </div>
+            <div class="form-group" style="flex:1; min-width:120px; margin:0;">
+              <label>Cultivo</label>
+              <select id="gr-cultivo"><option value="">Todos</option></select>
+            </div>
+            <button class="btn-primary" style="width:auto; padding:0.75rem 1.1rem; white-space:nowrap;" onclick="buscarRegistros()">Buscar</button>
+          </div>
+        </div>
+        <div class="chart-card" style="padding:0; overflow:hidden;">
+          <div id="lista-registros-g"><div class="loading-spinner">Busca para ver registros…</div></div>
+        </div>
+      </div>
+
+      <!-- MODAL EDITAR REGISTRO -->
+      <div id="edit-modal-overlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:1000; align-items:flex-start; justify-content:center; padding:2rem 1rem; overflow-y:auto;" onclick="if(event.target===this)cerrarEditModal()">
+        <div style="background:var(--blanco-roto); border-radius:20px; padding:2rem; width:100%; max-width:480px; box-shadow:0 24px 64px rgba(0,0,0,0.3); margin:auto;">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem;">
+            <h3 style="font-family:'Playfair Display',serif; font-size:1.2rem; color:var(--verde-oscuro); margin:0;">Editar registro</h3>
+            <button onclick="cerrarEditModal()" style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:var(--texto-suave); line-height:1;">×</button>
+          </div>
+          <input type="hidden" id="edit-id" />
+          <div class="form-row">
+            <div class="form-group">
+              <label>Fecha</label>
+              <input type="date" id="edit-fecha" />
+            </div>
+            <div class="form-group">
+              <label>Ubicación</label>
+              <select id="edit-ubicacion"></select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Cultivo</label>
+              <select id="edit-cultivo"></select>
+            </div>
+            <div class="form-group">
+              <label>Nº bandejas</label>
+              <input type="number" id="edit-num" min="1" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Tipo de bandeja</label>
+            <select id="edit-tipo"></select>
+          </div>
+          <div class="form-group">
+            <label>Comentarios</label>
+            <textarea id="edit-comentarios" style="min-height:70px;"></textarea>
+          </div>
+          <div style="display:flex; gap:0.75rem; margin-top:0.5rem;">
+            <button onclick="cerrarEditModal()" style="flex:1; padding:0.75rem; background:var(--crema); border:1.5px solid var(--crema-oscura); border-radius:var(--radio); font-family:'Source Sans 3',sans-serif; font-size:0.9rem; color:var(--texto-suave); cursor:pointer;">Cancelar</button>
+            <button onclick="guardarEdicion()" style="flex:2; padding:0.75rem; background:var(--verde-oscuro); border:none; border-radius:var(--radio); font-family:'Source Sans 3',sans-serif; font-size:0.9rem; font-weight:600; color:white; cursor:pointer;">Guardar cambios</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
 </div>
 
 <script>
@@ -855,13 +958,14 @@ const CULTIVOS_DEFAULT = {
 };
 
 function getCultivoColores() {
-  const saved = localStorage.getItem('cultivo_colores');
-  return saved ? { ...CULTIVOS_DEFAULT, ...JSON.parse(saved) } : { ...CULTIVOS_DEFAULT };
+  const mapa = {};
+  dbCultivos.forEach(c => { mapa[c.nombre] = c.color; });
+  return mapa;
 }
 
 function getCultivoColor(cultivo) {
-  const mapa = getCultivoColores();
-  return mapa[cultivo] || '#4a8c3f';
+  const found = dbCultivos.find(c => c.nombre === cultivo);
+  return found ? found.color : '#4a8c3f';
 }
 
 function abrirColorEditor() {
@@ -891,27 +995,28 @@ function cerrarColorEditor() {
   document.getElementById('color-modal-overlay').style.display = 'none';
 }
 
-function aplicarColores() {
-  const mapa = getCultivoColores();
-  const cultivosEnDatos = lastData.length ? [...new Set(lastData.map(r => r.cultivo))] : Object.keys(CULTIVOS_DEFAULT);
-  cultivosEnDatos.forEach(c => {
-    const input = document.getElementById('col-' + CSS.escape(c));
-    if (input) mapa[c] = input.value;
+async function aplicarColores() {
+  const cultivosEnDatos = lastData.length ? [...new Set(lastData.map(r => r.cultivo))] : dbCultivos.map(c => c.nombre);
+  const updates = [];
+  cultivosEnDatos.forEach(nombre => {
+    const input = document.getElementById('col-' + CSS.escape(nombre));
+    if (input) updates.push(supabaseClient.from('cultivos').update({ color: input.value }).eq('nombre', nombre));
   });
-  localStorage.setItem('cultivo_colores', JSON.stringify(mapa));
+  await Promise.all(updates);
+  await cargarMaestros();
   cerrarColorEditor();
   if (lastData.length) renderChartCultivo(lastData);
 }
 
-function resetearColores() {
-  localStorage.removeItem('cultivo_colores');
-  const cultivosEnDatos = lastData.length ? [...new Set(lastData.map(r => r.cultivo))] : Object.keys(CULTIVOS_DEFAULT);
-  cultivosEnDatos.forEach(c => {
-    const input = document.getElementById('col-' + CSS.escape(c));
+async function resetearColores() {
+  const cultivosEnDatos = lastData.length ? [...new Set(lastData.map(r => r.cultivo))] : dbCultivos.map(c => c.nombre);
+  cultivosEnDatos.forEach(nombre => {
+    const def = CULTIVOS_DEFAULT[nombre] || '#4a8c3f';
+    const input = document.getElementById('col-' + CSS.escape(nombre));
     if (input) {
-      input.value = CULTIVOS_DEFAULT[c] || '#4a8c3f';
-      const preview = document.getElementById('preview-' + CSS.escape(c));
-      if (preview) preview.style.background = input.value;
+      input.value = def;
+      const preview = document.getElementById('preview-' + CSS.escape(nombre));
+      if (preview) preview.style.background = def;
     }
   });
 }
@@ -929,22 +1034,59 @@ function initSupabase() {
 
 function saveSupabaseConfig() {}
 
-// ─── UBICACIONES ───
-function buildUbicaciones() {
-  const sel = document.getElementById('r-ubicacion');
-  sel.innerHTML = '<option value="">Seleccionar ubicación</option>';
-  const filtraSel = document.getElementById('filtro-ubicacion');
-  filtraSel.innerHTML = '<option value="">Todas</option>';
-  LETRAS.forEach(l => {
-    NUMEROS.forEach(n => {
-      const op = document.createElement('option');
-      op.value = l + n;
-      op.textContent = l + n;
-      sel.appendChild(op.cloneNode(true));
-      filtraSel.appendChild(op);
-    });
+// ─── DATOS MAESTROS DESDE SUPABASE ───
+let dbCultivos = [];
+let dbUbicaciones = [];
+let dbTipos = [];
+
+async function cargarMaestros() {
+  if (!supabaseClient) return;
+  const [rc, ru, rt] = await Promise.all([
+    supabaseClient.from('cultivos').select('*').eq('activo', true).order('orden'),
+    supabaseClient.from('ubicaciones').select('*').eq('activo', true).order('codigo'),
+    supabaseClient.from('tipos_bandeja').select('*').eq('activo', true).order('alveolas')
+  ]);
+  dbCultivos = rc.data || [];
+  dbUbicaciones = ru.data || [];
+  dbTipos = rt.data || [];
+  poblarSelectsCultivo();
+  poblarSelectsUbicacion();
+  poblarSelectsTipo();
+}
+
+function poblarSelectsCultivo() {
+  const sels = ['r-cultivo', 'filtro-cultivo'];
+  sels.forEach(id => {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    const first = id === 'r-cultivo' ? '<option value="">Seleccionar cultivo</option>' : '<option value="">Todos</option>';
+    sel.innerHTML = first + dbCultivos.map(c =>
+      `<option value="${c.nombre}" style="border-left:3px solid ${c.color}">${c.nombre}</option>`
+    ).join('');
   });
 }
+
+function poblarSelectsUbicacion() {
+  const sels = ['r-ubicacion', 'filtro-ubicacion'];
+  sels.forEach(id => {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    const first = id === 'r-ubicacion' ? '<option value="">Seleccionar ubicación</option>' : '<option value="">Todas</option>';
+    sel.innerHTML = first + dbUbicaciones.map(u =>
+      `<option value="${u.codigo}">${u.codigo}${u.descripcion ? ' — ' + u.descripcion : ''}</option>`
+    ).join('');
+  });
+}
+
+function poblarSelectsTipo() {
+  const sel = document.getElementById('r-tipo');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">Seleccionar tipo</option>' + dbTipos.map(t =>
+    `<option value="${t.alveolas}">${t.alveolas} alvéolos${t.descripcion ? ' — ' + t.descripcion : ''}</option>`
+  ).join('');
+}
+
+function buildUbicaciones() { /* reemplazado por cargarMaestros */ }
 
 // ─── AUTH ───
 async function doLogin() {
@@ -996,6 +1138,9 @@ function showPage(page, addHistory = true) {
     document.getElementById('dashboard-inner').classList.add('active');
     checkSupabaseSetup('dashboard');
     if (supabaseClient) initDashboard();
+  } else if (page === 'gestion') {
+    document.getElementById('gestion-inner').classList.add('active');
+    cargarSeccionGestion('cultivos');
   }
   if (addHistory) {
     history.pushState({ page }, '', '#' + page);
@@ -1247,21 +1392,355 @@ function renderTabla(data) {
   `).join('');
 }
 
+// ─── GESTIÓN DE REGISTROS ───
+function iniciarSeccionRegistros() {
+  const hoy = new Date().toISOString().split('T')[0];
+  const hace30 = new Date(Date.now() - 30*24*60*60*1000).toISOString().split('T')[0];
+  document.getElementById('gr-desde').value = hace30;
+  document.getElementById('gr-hasta').value = hoy;
+  const sel = document.getElementById('gr-cultivo');
+  sel.innerHTML = '<option value="">Todos</option>' + dbCultivos.map(c => `<option value="${c.nombre}">${c.nombre}</option>`).join('');
+  buscarRegistros();
+}
+
+async function buscarRegistros() {
+  const desde = document.getElementById('gr-desde').value;
+  const hasta = document.getElementById('gr-hasta').value;
+  const cultivo = document.getElementById('gr-cultivo').value;
+  const cont = document.getElementById('lista-registros-g');
+  cont.innerHTML = '<div class="loading-spinner">Cargando…</div>';
+
+  let q = supabaseClient.from('bandejas').select('*').order('fecha', { ascending: false });
+  if (desde) q = q.gte('fecha', desde);
+  if (hasta) q = q.lte('fecha', hasta);
+  if (cultivo) q = q.eq('cultivo', cultivo);
+
+  const { data, error } = await q.limit(200);
+  if (error || !data || !data.length) {
+    cont.innerHTML = '<div style="padding:2rem; text-align:center; color:var(--texto-suave); font-size:0.9rem;">Sin registros en este período</div>';
+    return;
+  }
+
+  cont.innerHTML = `
+    <div style="padding:0.65rem 1.25rem; background:var(--crema); border-bottom:1px solid var(--crema-oscura); font-size:0.78rem; font-weight:600; color:var(--texto-suave); text-transform:uppercase; letter-spacing:0.04em;">
+      ${data.length} registro${data.length !== 1 ? 's' : ''} encontrado${data.length !== 1 ? 's' : ''}
+    </div>
+    ${data.map(r => `
+    <div style="display:flex; align-items:center; gap:0.65rem; padding:0.7rem 1.25rem; border-bottom:1px solid #f0ece4; flex-wrap:wrap;">
+      <div style="min-width:85px; font-size:0.82rem; color:var(--texto-suave);">${new Date(r.fecha).toLocaleDateString('es-ES')}</div>
+      <span style="background:#e0f0dc; color:#1f5a1a; padding:0.15rem 0.55rem; border-radius:20px; font-size:0.78rem; font-weight:600;">${r.ubicacion}</span>
+      <div style="flex:1; min-width:80px; font-size:0.88rem; font-weight:500; color:var(--texto);">${r.cultivo}</div>
+      <div style="font-size:0.88rem; color:var(--texto-suave);"><strong style="color:var(--texto);">${r.num_bandejas}</strong> × <span style="background:#f5edd0; color:#7a4e0a; padding:0.1rem 0.45rem; border-radius:20px; font-size:0.75rem; font-weight:600;">${r.tipo_bandeja}</span></div>
+      <div style="display:flex; gap:0.4rem; margin-left:auto;">
+        <button onclick="abrirEditModal(${JSON.stringify(r).replace(/"/g,'&quot;')})" style="background:none; border:1.5px solid var(--crema-oscura); border-radius:6px; padding:0.25rem 0.65rem; font-size:0.75rem; color:var(--texto-suave); cursor:pointer;">✏️ Editar</button>
+        <button onclick="eliminarRegistro('${r.id}')" style="background:none; border:1.5px solid #f0c0bb; border-radius:6px; padding:0.25rem 0.65rem; font-size:0.75rem; color:#8b2d25; cursor:pointer;">🗑 Eliminar</button>
+      </div>
+    </div>
+    `).join('')}
+  `;
+}
+
+function abrirEditModal(r) {
+  document.getElementById('edit-id').value = r.id;
+  document.getElementById('edit-fecha').value = r.fecha;
+  document.getElementById('edit-num').value = r.num_bandejas;
+  document.getElementById('edit-comentarios').value = r.comentarios || '';
+
+  const selUbi = document.getElementById('edit-ubicacion');
+  selUbi.innerHTML = dbUbicaciones.map(u => `<option value="${u.codigo}" ${u.codigo === r.ubicacion ? 'selected' : ''}>${u.codigo}</option>`).join('');
+
+  const selCult = document.getElementById('edit-cultivo');
+  selCult.innerHTML = dbCultivos.map(c => `<option value="${c.nombre}" ${c.nombre === r.cultivo ? 'selected' : ''}>${c.nombre}</option>`).join('');
+
+  const selTipo = document.getElementById('edit-tipo');
+  selTipo.innerHTML = dbTipos.map(t => `<option value="${t.alveolas}" ${t.alveolas === r.tipo_bandeja ? 'selected' : ''}>${t.alveolas} alvéolos</option>`).join('');
+
+  document.getElementById('edit-modal-overlay').style.display = 'flex';
+}
+
+function cerrarEditModal() {
+  document.getElementById('edit-modal-overlay').style.display = 'none';
+}
+
+async function guardarEdicion() {
+  const id = document.getElementById('edit-id').value;
+  const fecha = document.getElementById('edit-fecha').value;
+  const ubicacion = document.getElementById('edit-ubicacion').value;
+  const cultivo = document.getElementById('edit-cultivo').value;
+  const num_bandejas = parseInt(document.getElementById('edit-num').value);
+  const tipo_bandeja = parseInt(document.getElementById('edit-tipo').value);
+  const comentarios = document.getElementById('edit-comentarios').value;
+
+  if (!fecha || !ubicacion || !cultivo || !num_bandejas || !tipo_bandeja) {
+    alert('Rellena todos los campos obligatorios'); return;
+  }
+
+  const btn = event.target;
+  btn.disabled = true; btn.textContent = 'Guardando…';
+  await supabaseClient.from('bandejas').update({ fecha, ubicacion, cultivo, num_bandejas, tipo_bandeja, comentarios: comentarios || null }).eq('id', id);
+  btn.disabled = false; btn.textContent = 'Guardar cambios';
+  cerrarEditModal();
+  buscarRegistros();
+}
+
+async function eliminarRegistro(id) {
+  if (!confirm('¿Eliminar este registro? Esta acción no se puede deshacer.')) return;
+  await supabaseClient.from('bandejas').delete().eq('id', id);
+  buscarRegistros();
+}
+
+// ─── INIT ───
+// ─── GESTIÓN ───
+function switchGTab(tab) {
+  ['cultivos','ubicaciones','tipos','registros'].forEach(t => {
+    document.getElementById('gtab-' + t).classList.toggle('active', t === tab);
+    document.getElementById('gsec-' + t).style.display = t === tab ? 'block' : 'none';
+  });
+  cargarSeccionGestion(tab);
+}
+
+async function cargarSeccionGestion(tab) {
+  if (tab === 'cultivos') await renderListaCultivos();
+  else if (tab === 'ubicaciones') await renderListaUbicaciones();
+  else if (tab === 'tipos') await renderListaTipos();
+  else if (tab === 'registros') iniciarSeccionRegistros();
+}
+
+function itemRow(icon, label, sub, onDelete, onToggle, activo) {
+  return `<div style="display:flex; align-items:center; gap:0.75rem; padding:0.75rem 1.25rem; border-bottom:1px solid #f0ece4;">
+    <span style="font-size:18px; flex-shrink:0;">${icon}</span>
+    <div style="flex:1; min-width:0;">
+      <div style="font-size:0.92rem; font-weight:500; color:var(--texto); ${activo ? '' : 'opacity:0.45; text-decoration:line-through;'}">${label}</div>
+      ${sub ? `<div style="font-size:0.78rem; color:var(--texto-suave);">${sub}</div>` : ''}
+    </div>
+    <button onclick="${onToggle}" style="background:none; border:1.5px solid var(--crema-oscura); border-radius:6px; padding:0.25rem 0.6rem; font-size:0.75rem; color:var(--texto-suave); cursor:pointer;" title="${activo ? 'Desactivar' : 'Activar'}">${activo ? '✓ Activo' : '○ Inactivo'}</button>
+    <button onclick="${onDelete}" style="background:none; border:1.5px solid #f0c0bb; border-radius:6px; padding:0.25rem 0.6rem; font-size:0.75rem; color:#8b2d25; cursor:pointer;">Eliminar</button>
+  </div>`;
+}
+
+async function renderListaCultivos() {
+  const { data } = await supabaseClient.from('cultivos').select('*').order('orden');
+  const list = document.getElementById('lista-cultivos');
+  if (!data || !data.length) { list.innerHTML = '<div style="padding:1.5rem; text-align:center; color:var(--texto-suave); font-size:0.9rem;">Sin cultivos aún</div>'; return; }
+  list.innerHTML = data.map(c => `
+    <div style="display:flex; align-items:center; gap:0.75rem; padding:0.75rem 1.25rem; border-bottom:1px solid #f0ece4;">
+      <input type="color" value="${c.color}" title="Cambiar color"
+        style="width:36px; height:36px; border:none; border-radius:50%; cursor:pointer; padding:2px; background:none; flex-shrink:0;"
+        onchange="guardarColorCultivo('${c.id}', this.value)" />
+      <div style="flex:1; font-size:0.92rem; font-weight:500; color:var(--texto); ${c.activo ? '' : 'opacity:0.45; text-decoration:line-through;'}">${c.nombre}</div>
+      <button onclick="toggleCultivo('${c.id}', ${c.activo})" style="background:none; border:1.5px solid var(--crema-oscura); border-radius:6px; padding:0.25rem 0.6rem; font-size:0.75rem; color:var(--texto-suave); cursor:pointer;">${c.activo ? '✓ Activo' : '○ Inactivo'}</button>
+      <button onclick="eliminarCultivo('${c.id}')" style="background:none; border:1.5px solid #f0c0bb; border-radius:6px; padding:0.25rem 0.6rem; font-size:0.75rem; color:#8b2d25; cursor:pointer;">Eliminar</button>
+    </div>
+  `).join('');
+}
+
+async function guardarColorCultivo(id, color) {
+  await supabaseClient.from('cultivos').update({ color }).eq('id', id);
+  await cargarMaestros();
+  if (lastData.length) renderChartCultivo(lastData);
+}
+
+async function addCultivo() {
+  const nombre = document.getElementById('g-cultivo-nombre').value.trim();
+  const color = document.getElementById('g-cultivo-color').value;
+  if (!nombre) return;
+  const { data: existing } = await supabaseClient.from('cultivos').select('orden').order('orden', { ascending: false }).limit(1);
+  const orden = existing && existing.length ? existing[0].orden + 1 : 1;
+  await supabaseClient.from('cultivos').insert([{ nombre, color, orden }]);
+  document.getElementById('g-cultivo-nombre').value = '';
+  await cargarMaestros();
+  await renderListaCultivos();
+}
+
+async function eliminarCultivo(id) {
+  if (!confirm('¿Eliminar este cultivo?')) return;
+  await supabaseClient.from('cultivos').delete().eq('id', id);
+  await cargarMaestros();
+  await renderListaCultivos();
+}
+
+async function toggleCultivo(id, activo) {
+  await supabaseClient.from('cultivos').update({ activo: !activo }).eq('id', id);
+  await cargarMaestros();
+  await renderListaCultivos();
+}
+
+async function renderListaUbicaciones() {
+  const { data } = await supabaseClient.from('ubicaciones').select('*').order('codigo');
+  const list = document.getElementById('lista-ubicaciones');
+  if (!data || !data.length) { list.innerHTML = '<div style="padding:1.5rem; text-align:center; color:var(--texto-suave); font-size:0.9rem;">Sin ubicaciones aún</div>'; return; }
+  list.innerHTML = data.map(u => itemRow('📍', u.codigo, u.descripcion || null,
+    `eliminarUbicacion('${u.id}')`, `toggleUbicacion('${u.id}', ${u.activo})`, u.activo
+  )).join('');
+}
+
+async function addUbicacion() {
+  const codigo = document.getElementById('g-ubi-codigo').value.trim().toUpperCase();
+  const descripcion = document.getElementById('g-ubi-desc').value.trim();
+  if (!codigo) return;
+  await supabaseClient.from('ubicaciones').insert([{ codigo, descripcion: descripcion || null }]);
+  document.getElementById('g-ubi-codigo').value = '';
+  document.getElementById('g-ubi-desc').value = '';
+  await cargarMaestros();
+  await renderListaUbicaciones();
+}
+
+async function eliminarUbicacion(id) {
+  if (!confirm('¿Eliminar esta ubicación?')) return;
+  await supabaseClient.from('ubicaciones').delete().eq('id', id);
+  await cargarMaestros();
+  await renderListaUbicaciones();
+}
+
+async function toggleUbicacion(id, activo) {
+  await supabaseClient.from('ubicaciones').update({ activo: !activo }).eq('id', id);
+  await cargarMaestros();
+  await renderListaUbicaciones();
+}
+
+async function renderListaTipos() {
+  const { data } = await supabaseClient.from('tipos_bandeja').select('*').order('alveolas');
+  const list = document.getElementById('lista-tipos');
+  if (!data || !data.length) { list.innerHTML = '<div style="padding:1.5rem; text-align:center; color:var(--texto-suave); font-size:0.9rem;">Sin tipos aún</div>'; return; }
+  list.innerHTML = data.map(t => itemRow('🟫', t.alveolas + ' alvéolos', t.descripcion || null,
+    `eliminarTipo('${t.id}')`, `toggleTipo('${t.id}', ${t.activo})`, t.activo
+  )).join('');
+}
+
+async function addTipo() {
+  const alveolas = parseInt(document.getElementById('g-tipo-alv').value);
+  const descripcion = document.getElementById('g-tipo-desc').value.trim();
+  if (!alveolas) return;
+  await supabaseClient.from('tipos_bandeja').insert([{ alveolas, descripcion: descripcion || null }]);
+  document.getElementById('g-tipo-alv').value = '';
+  document.getElementById('g-tipo-desc').value = '';
+  await cargarMaestros();
+  await renderListaTipos();
+}
+
+async function eliminarTipo(id) {
+  if (!confirm('¿Eliminar este tipo?')) return;
+  await supabaseClient.from('tipos_bandeja').delete().eq('id', id);
+  await cargarMaestros();
+  await renderListaTipos();
+}
+
+async function toggleTipo(id, activo) {
+  await supabaseClient.from('tipos_bandeja').update({ activo: !activo }).eq('id', id);
+  await cargarMaestros();
+  await renderListaTipos();
+}
+
+// ─── GESTIÓN DE REGISTROS ───
+function iniciarSeccionRegistros() {
+  const hoy = new Date().toISOString().split('T')[0];
+  const hace30 = new Date(Date.now() - 30*24*60*60*1000).toISOString().split('T')[0];
+  document.getElementById('gr-desde').value = hace30;
+  document.getElementById('gr-hasta').value = hoy;
+  const sel = document.getElementById('gr-cultivo');
+  sel.innerHTML = '<option value="">Todos</option>' + dbCultivos.map(c => `<option value="${c.nombre}">${c.nombre}</option>`).join('');
+  buscarRegistros();
+}
+
+async function buscarRegistros() {
+  const desde = document.getElementById('gr-desde').value;
+  const hasta = document.getElementById('gr-hasta').value;
+  const cultivo = document.getElementById('gr-cultivo').value;
+  const cont = document.getElementById('lista-registros-g');
+  cont.innerHTML = '<div class="loading-spinner">Cargando…</div>';
+
+  let q = supabaseClient.from('bandejas').select('*').order('fecha', { ascending: false });
+  if (desde) q = q.gte('fecha', desde);
+  if (hasta) q = q.lte('fecha', hasta);
+  if (cultivo) q = q.eq('cultivo', cultivo);
+
+  const { data, error } = await q.limit(200);
+  if (error || !data || !data.length) {
+    cont.innerHTML = '<div style="padding:2rem; text-align:center; color:var(--texto-suave); font-size:0.9rem;">Sin registros en este período</div>';
+    return;
+  }
+
+  cont.innerHTML = `
+    <div style="padding:0.65rem 1.25rem; background:var(--crema); border-bottom:1px solid var(--crema-oscura); font-size:0.78rem; font-weight:600; color:var(--texto-suave); text-transform:uppercase; letter-spacing:0.04em;">
+      ${data.length} registro${data.length !== 1 ? 's' : ''} encontrado${data.length !== 1 ? 's' : ''}
+    </div>
+    ${data.map(r => `
+    <div style="display:flex; align-items:center; gap:0.65rem; padding:0.7rem 1.25rem; border-bottom:1px solid #f0ece4; flex-wrap:wrap;">
+      <div style="min-width:85px; font-size:0.82rem; color:var(--texto-suave);">${new Date(r.fecha).toLocaleDateString('es-ES')}</div>
+      <span style="background:#e0f0dc; color:#1f5a1a; padding:0.15rem 0.55rem; border-radius:20px; font-size:0.78rem; font-weight:600;">${r.ubicacion}</span>
+      <div style="flex:1; min-width:80px; font-size:0.88rem; font-weight:500; color:var(--texto);">${r.cultivo}</div>
+      <div style="font-size:0.88rem; color:var(--texto-suave);"><strong style="color:var(--texto);">${r.num_bandejas}</strong> × <span style="background:#f5edd0; color:#7a4e0a; padding:0.1rem 0.45rem; border-radius:20px; font-size:0.75rem; font-weight:600;">${r.tipo_bandeja}</span></div>
+      <div style="display:flex; gap:0.4rem; margin-left:auto;">
+        <button onclick="abrirEditModal(${JSON.stringify(r).replace(/"/g,'&quot;')})" style="background:none; border:1.5px solid var(--crema-oscura); border-radius:6px; padding:0.25rem 0.65rem; font-size:0.75rem; color:var(--texto-suave); cursor:pointer;">✏️ Editar</button>
+        <button onclick="eliminarRegistro('${r.id}')" style="background:none; border:1.5px solid #f0c0bb; border-radius:6px; padding:0.25rem 0.65rem; font-size:0.75rem; color:#8b2d25; cursor:pointer;">🗑 Eliminar</button>
+      </div>
+    </div>
+    `).join('')}
+  `;
+}
+
+function abrirEditModal(r) {
+  document.getElementById('edit-id').value = r.id;
+  document.getElementById('edit-fecha').value = r.fecha;
+  document.getElementById('edit-num').value = r.num_bandejas;
+  document.getElementById('edit-comentarios').value = r.comentarios || '';
+
+  const selUbi = document.getElementById('edit-ubicacion');
+  selUbi.innerHTML = dbUbicaciones.map(u => `<option value="${u.codigo}" ${u.codigo === r.ubicacion ? 'selected' : ''}>${u.codigo}</option>`).join('');
+
+  const selCult = document.getElementById('edit-cultivo');
+  selCult.innerHTML = dbCultivos.map(c => `<option value="${c.nombre}" ${c.nombre === r.cultivo ? 'selected' : ''}>${c.nombre}</option>`).join('');
+
+  const selTipo = document.getElementById('edit-tipo');
+  selTipo.innerHTML = dbTipos.map(t => `<option value="${t.alveolas}" ${t.alveolas === r.tipo_bandeja ? 'selected' : ''}>${t.alveolas} alvéolos</option>`).join('');
+
+  document.getElementById('edit-modal-overlay').style.display = 'flex';
+}
+
+function cerrarEditModal() {
+  document.getElementById('edit-modal-overlay').style.display = 'none';
+}
+
+async function guardarEdicion() {
+  const id = document.getElementById('edit-id').value;
+  const fecha = document.getElementById('edit-fecha').value;
+  const ubicacion = document.getElementById('edit-ubicacion').value;
+  const cultivo = document.getElementById('edit-cultivo').value;
+  const num_bandejas = parseInt(document.getElementById('edit-num').value);
+  const tipo_bandeja = parseInt(document.getElementById('edit-tipo').value);
+  const comentarios = document.getElementById('edit-comentarios').value;
+
+  if (!fecha || !ubicacion || !cultivo || !num_bandejas || !tipo_bandeja) {
+    alert('Rellena todos los campos obligatorios'); return;
+  }
+
+  const btn = event.target;
+  btn.disabled = true; btn.textContent = 'Guardando…';
+  await supabaseClient.from('bandejas').update({ fecha, ubicacion, cultivo, num_bandejas, tipo_bandeja, comentarios: comentarios || null }).eq('id', id);
+  btn.disabled = false; btn.textContent = 'Guardar cambios';
+  cerrarEditModal();
+  buscarRegistros();
+}
+
+async function eliminarRegistro(id) {
+  if (!confirm('¿Eliminar este registro? Esta acción no se puede deshacer.')) return;
+  await supabaseClient.from('bandejas').delete().eq('id', id);
+  buscarRegistros();
+}
+
 // ─── INIT ───
 window.addEventListener('DOMContentLoaded', () => {
   const today = new Date().toISOString().split('T')[0];
   document.getElementById('r-fecha').value = today;
-  buildUbicaciones();
 
-  const hasConfig = initSupabase();
-  if (hasConfig) {
-    supabaseClient.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        document.getElementById('user-email-display').textContent = session.user.email;
-        showApp();
-      }
-    });
-  }
+  initSupabase();
+  supabaseClient.auth.getSession().then(async ({ data: { session } }) => {
+    if (session) {
+      document.getElementById('user-email-display').textContent = session.user.email;
+      await cargarMaestros();
+      showApp();
+    }
+  });
 });
 </script>
 </body>
