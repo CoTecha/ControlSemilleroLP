@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Finca — Gestión de Bandejas</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --verde-oscuro: #1f3d1a;
+    --verde-medio: #2d5a25;
+    --verde-claro: #4a8c3f;
+    --verde-suave: #7ab870;
+    --verde-menta: #b8d9b0;
+    --crema: #f5f0e8;
+    --crema-oscura: #e8e0d0;
+    --tierra: #8b6914;
+    --tierra-clara: #c49a2e;
+    --marron: #5c3d1e;
+    --blanco-roto: #faf8f4;
+    --texto: #1a2e17;
+    --texto-suave: #4a6642;
+    --sombra: rgba(31,61,26,0.12);
+    --radio: 10px;
+    --radio-lg: 16px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Source Sans 3', sans-serif;
+    background: var(--crema);
+    color: var(--texto);
+    min-height: 100vh;
+  }
+
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ─── LOGIN ─── */
+  #login-page {
+    min-height: 100vh;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(160deg, #1f3d1a 0%, #2d5a25 40%, #3d7032 70%, #4a8c3f 100%);
+    position: relative;
+    overflow: hidden;
+  }
+  #login-page.active { display: flex; }
+  #login-page::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(circle at 20% 80%, rgba(255,255,255,0.03) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(255,255,255,0.04) 0%, transparent 50%);
+  }
+
+  .login-card {
+    background: var(--blanco-roto);
+    border-radius: 20px;
+    padding: 3rem 2.5rem;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.3);
+    position: relative;
+    z-index: 1;
+  }
+
+  .login-logo {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+  .login-logo .icon {
+    width: 64px;
+    height: 64px;
+    background: var(--verde-oscuro);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    font-size: 28px;
+  }
+  .login-logo h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem;
+    color: var(--verde-oscuro);
+    font-weight: 600;
+  }
+  .login-logo p {
+    font-size: 0.9rem;
+    color: var(--texto-suave);
+    margin-top: 0.25rem;
+  }
+
+  .form-group { margin-bottom: 1.2rem; }
+  .form-group label {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--texto-suave);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.4rem;
+  }
+  .form-group input, .form-group select, .form-group textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1.5px solid var(--crema-oscura);
+    border-radius: var(--radio);
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 0.95rem;
+    background: white;
+    color: var(--texto);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+    appearance: none;
+  }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+    border-color: var(--verde-claro);
+    box-shadow: 0 0 0 3px rgba(74,140,63,0.12);
+  }
+  .form-group select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%234a6642' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    padding-right: 2.5rem;
+  }
+  .form-group textarea { resize: vertical; min-height: 80px; }
+
+  .btn-primary {
+    width: 100%;
+    padding: 0.85rem;
+    background: var(--verde-oscuro);
+    color: white;
+    border: none;
+    border-radius: var(--radio);
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    letter-spacing: 0.02em;
+  }
+  .btn-primary:hover { background: var(--verde-medio); }
+  .btn-primary:active { transform: scale(0.99); }
+  .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  .error-msg {
+    background: #fdf0ef;
+    border: 1px solid #f0c0bb;
+    color: #8b2d25;
+    padding: 0.65rem 0.9rem;
+    border-radius: var(--radio);
+    font-size: 0.88rem;
+    margin-bottom: 1rem;
+    display: none;
+  }
+  .error-msg.show { display: block; }
+
+  /* ─── TOPBAR ─── */
+  .topbar {
+    background: var(--verde-oscuro);
+    color: white;
+    padding: 0 1.5rem;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+  }
+  .topbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem;
+    font-weight: 600;
+  }
+  .topbar-brand .leaf { font-size: 18px; }
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 0.85rem;
+    color: var(--verde-menta);
+  }
+  .topbar-right .user-email { opacity: 0.8; }
+  .btn-logout {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: white;
+    padding: 0.3rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    cursor: pointer;
+    font-family: 'Source Sans 3', sans-serif;
+    transition: background 0.2s;
+  }
+  .btn-logout:hover { background: rgba(255,255,255,0.2); }
+
+  /* ─── MENÚ PRINCIPAL ─── */
+  #menu-page .page-inner {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 3rem 1.5rem;
+    text-align: center;
+  }
+  .menu-heading {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    color: var(--verde-oscuro);
+    margin-bottom: 0.5rem;
+  }
+  .menu-sub { color: var(--texto-suave); margin-bottom: 2.5rem; font-size: 1rem; }
+
+  .menu-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  .menu-card {
+    background: white;
+    border: 2px solid var(--crema-oscura);
+    border-radius: var(--radio-lg);
+    padding: 1.75rem 1.5rem;
+    cursor: pointer;
+    transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+  }
+  .menu-card:hover {
+    border-color: var(--verde-claro);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px var(--sombra);
+  }
+  .menu-card.disabled { opacity: 0.45; cursor: not-allowed; }
+  .menu-card.disabled:hover { transform: none; box-shadow: none; border-color: var(--crema-oscura); }
+  .menu-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+  .icon-verde { background: #e8f3e5; }
+  .icon-tierra { background: #f5f0e0; }
+  .icon-azul { background: #e5eef8; }
+  .menu-card-text h3 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--texto);
+    margin-bottom: 0.2rem;
+  }
+  .menu-card-text p { font-size: 0.88rem; color: var(--texto-suave); }
+
+  /* ─── CONTENIDO INTERIOR ─── */
+  .inner-page { display: none; }
+  .inner-page.active { display: block; }
+
+  .page-header {
+    background: white;
+    border-bottom: 1px solid var(--crema-oscura);
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .btn-back {
+    background: none;
+    border: 1.5px solid var(--crema-oscura);
+    border-radius: 8px;
+    padding: 0.4rem 0.85rem;
+    font-size: 0.85rem;
+    color: var(--texto-suave);
+    cursor: pointer;
+    font-family: 'Source Sans 3', sans-serif;
+    transition: border-color 0.2s, color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+  .btn-back:hover { border-color: var(--verde-claro); color: var(--verde-oscuro); }
+  .page-header h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem;
+    color: var(--verde-oscuro);
+  }
+
+  /* ─── REGISTRO ─── */
+  #registro-inner .content {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+  }
+
+  .form-card {
+    background: white;
+    border-radius: var(--radio-lg);
+    border: 1px solid var(--crema-oscura);
+    padding: 2rem;
+    box-shadow: 0 2px 12px var(--sombra);
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .success-banner {
+    background: #e8f5e4;
+    border: 1px solid #7ab870;
+    color: #1f3d1a;
+    padding: 0.9rem 1.1rem;
+    border-radius: var(--radio);
+    font-size: 0.92rem;
+    margin-bottom: 1.25rem;
+    display: none;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+  }
+  .success-banner.show { display: flex; }
+
+  /* ─── DASHBOARD ─── */
+  #dashboard-inner .content {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+  }
+
+  .dash-filters {
+    background: white;
+    border-radius: var(--radio-lg);
+    border: 1px solid var(--crema-oscura);
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  .dash-filters label {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--texto-suave);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-right: -0.5rem;
+  }
+  .dash-filters select {
+    padding: 0.5rem 2rem 0.5rem 0.85rem;
+    border: 1.5px solid var(--crema-oscura);
+    border-radius: 8px;
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 0.9rem;
+    background: var(--crema);
+    color: var(--texto);
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%234a6642' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .dash-filters select:focus { border-color: var(--verde-claro); }
+
+  .btn-refresh {
+    padding: 0.5rem 1.1rem;
+    background: var(--verde-oscuro);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-left: auto;
+  }
+  .btn-refresh:hover { background: var(--verde-medio); }
+
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .kpi-card {
+    background: white;
+    border: 1px solid var(--crema-oscura);
+    border-radius: var(--radio-lg);
+    padding: 1.25rem 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .kpi-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 4px;
+    border-radius: 4px 0 0 4px;
+  }
+  .kpi-verde::before { background: var(--verde-claro); }
+  .kpi-tierra::before { background: var(--tierra-clara); }
+  .kpi-marron::before { background: #8b6914; }
+  .kpi-azul::before { background: #4a7ec4; }
+
+  .kpi-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--texto-suave);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.4rem;
+  }
+  .kpi-value {
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--verde-oscuro);
+    line-height: 1;
+    font-family: 'Playfair Display', serif;
+  }
+  .kpi-sub { font-size: 0.8rem; color: var(--texto-suave); margin-top: 0.25rem; }
+
+  .chart-card {
+    background: white;
+    border: 1px solid var(--crema-oscura);
+    border-radius: var(--radio-lg);
+    padding: 1.5rem;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 1px 8px var(--sombra);
+  }
+  .chart-card h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.05rem;
+    color: var(--verde-oscuro);
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--crema-oscura);
+  }
+
+  .chart-wrap { position: relative; height: 260px; }
+
+  .table-wrap { overflow-x: auto; }
+  table.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+  }
+  .data-table th {
+    background: var(--crema);
+    padding: 0.65rem 0.85rem;
+    text-align: left;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--texto-suave);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border-bottom: 1px solid var(--crema-oscura);
+  }
+  .data-table td {
+    padding: 0.65rem 0.85rem;
+    border-bottom: 1px solid #f0ece4;
+    color: var(--texto);
+  }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:hover td { background: #fbf9f5; }
+
+  .badge {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 600;
+  }
+  .badge-verde { background: #e0f0dc; color: #1f5a1a; }
+  .badge-tierra { background: #f5edd0; color: #7a4e0a; }
+
+  .loading-spinner {
+    text-align: center;
+    padding: 3rem;
+    color: var(--texto-suave);
+    font-size: 0.95rem;
+  }
+
+  .setup-box {
+    background: #fff8e8;
+    border: 1.5px solid #e6c96a;
+    border-radius: var(--radio-lg);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .setup-box h3 {
+    font-weight: 600;
+    color: var(--marron);
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+  }
+  .setup-box p { font-size: 0.88rem; color: #6b4f10; line-height: 1.6; }
+  .setup-box code {
+    display: block;
+    background: #fdf3d0;
+    border: 1px solid #e6c96a;
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    font-family: monospace;
+    font-size: 0.82rem;
+    margin-top: 0.75rem;
+    white-space: pre;
+    overflow-x: auto;
+    color: #4a2e0a;
+    line-height: 1.6;
+  }
+
+  .config-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+  }
+  @media (max-width: 500px) {
+    .config-form { grid-template-columns: 1fr; }
+    .form-row { grid-template-columns: 1fr; }
+  }
+
+  .tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    background: white;
+    border: 1px solid var(--crema-oscura);
+    border-radius: var(--radio);
+    padding: 0.35rem;
+  }
+  .tab {
+    flex: 1;
+    padding: 0.55rem 0.5rem;
+    border: none;
+    background: none;
+    border-radius: 7px;
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: var(--texto-suave);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .tab.active {
+    background: var(--verde-oscuro);
+    color: white;
+  }
+  .tab:hover:not(.active) { background: var(--crema-oscura); }
+</style>
+</head>
+<body>
+
+<!-- ═══════════ LOGIN PAGE ═══════════ -->
+<div id="login-page" class="page active">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="icon">🌱</div>
+      <h1>Finca</h1>
+      <p>Gestión de bandejas</p>
+    </div>
+    <div class="error-msg" id="login-error">Usuario o contraseña incorrectos.</div>
+    <div class="form-group">
+      <label>Correo electrónico</label>
+      <input type="email" id="login-email" placeholder="tu@email.com" autocomplete="email" />
+    </div>
+    <div class="form-group">
+      <label>Contraseña</label>
+      <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password" />
+    </div>
+    <button class="btn-primary" id="login-btn" onclick="doLogin()">Entrar</button>
+
+  </div>
+</div>
+
+<!-- ═══════════ APP SHELL ═══════════ -->
+<div id="app-shell" style="display:none; flex-direction:column; min-height:100vh;">
+
+  <div class="topbar">
+    <div class="topbar-brand">
+      <span class="leaf">🌿</span>
+      Finca
+    </div>
+    <div class="topbar-right">
+      <span class="user-email" id="user-email-display"></span>
+      <button class="btn-logout" onclick="doLogout()">Salir</button>
+    </div>
+  </div>
+
+  <!-- MENÚ -->
+  <div id="menu-page" class="inner-page active">
+    <div class="page-inner">
+      <h2 class="menu-heading" style="margin-top:2rem;">Panel de control</h2>
+      <p class="menu-sub">¿Qué quieres hacer hoy?</p>
+      <div class="menu-grid">
+        <div class="menu-card" onclick="showPage('registro')">
+          <div class="menu-icon icon-verde">🌱</div>
+          <div class="menu-card-text">
+            <h3>Registrar bandejas nuevas</h3>
+            <p>Añadir una nueva entrada de bandejas por ubicación y cultivo</p>
+          </div>
+        </div>
+        <div class="menu-card" onclick="showPage('dashboard')">
+          <div class="menu-icon icon-tierra">📊</div>
+          <div class="menu-card-text">
+            <h3>Dashboard interactivo</h3>
+            <p>Visualizar datos por semanas, meses y años con totales</p>
+          </div>
+        </div>
+        <div class="menu-card disabled">
+          <div class="menu-icon icon-azul">🗺️</div>
+          <div class="menu-card-text">
+            <h3>Mapa de la finca</h3>
+            <p>Próximamente — vista visual de parcelas y ubicaciones</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- REGISTRO -->
+  <div id="registro-inner" class="inner-page">
+    <div class="page-header">
+      <button class="btn-back" onclick="showPage('menu')">← Menú</button>
+      <h2>Registrar bandejas</h2>
+    </div>
+    <div class="content">
+
+
+      <div class="success-banner" id="registro-ok">✅ Registro guardado correctamente</div>
+      <div class="error-msg" id="registro-error" style="display:none;"></div>
+
+      <div class="form-card">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Fecha</label>
+            <input type="date" id="r-fecha" />
+          </div>
+          <div class="form-group">
+            <label>Ubicación</label>
+            <select id="r-ubicacion"></select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Cultivo</label>
+            <select id="r-cultivo">
+              <option value="">Seleccionar cultivo</option>
+              <option>Tomate</option>
+              <option>Melón</option>
+              <option>Sandía Injertada</option>
+              <option>Sandía</option>
+              <option>Pepino</option>
+              <option>Pimiento</option>
+              <option>Berenjena</option>
+              <option>Calabacín</option>
+              <option>Lechuga</option>
+              <option>Albahaca</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Número de bandejas</label>
+            <input type="number" id="r-num" placeholder="0" min="1" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Tipo de bandeja</label>
+          <select id="r-tipo">
+            <option value="">Seleccionar tipo</option>
+            <option value="75">75 alvéolos</option>
+            <option value="150">150 alvéolos</option>
+            <option value="294">294 alvéolos</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Comentarios</label>
+          <textarea id="r-comentarios" placeholder="Observaciones opcionales..."></textarea>
+        </div>
+        <button class="btn-primary" id="btn-guardar" onclick="guardarRegistro()">Guardar registro</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="dashboard-inner" class="inner-page">
+    <div class="page-header">
+      <button class="btn-back" onclick="showPage('menu')">← Menú</button>
+      <h2>Dashboard interactivo</h2>
+    </div>
+    <div class="content">
+
+
+
+      <div id="dash-content" style="display:none;">
+        <div class="tabs">
+          <button class="tab active" id="tab-semana" onclick="setGranularidad('semana')">Por semana</button>
+          <button class="tab" id="tab-mes" onclick="setGranularidad('mes')">Por mes</button>
+          <button class="tab" id="tab-anio" onclick="setGranularidad('anio')">Por año</button>
+        </div>
+
+        <div class="dash-filters">
+          <label>Año</label>
+          <select id="filtro-anio" onchange="cargarDashboard()"></select>
+          <label>Cultivo</label>
+          <select id="filtro-cultivo" onchange="cargarDashboard()">
+            <option value="">Todos</option>
+            <option>Tomate</option>
+            <option>Melón</option>
+            <option>Sandía Injertada</option>
+            <option>Sandía</option>
+            <option>Pepino</option>
+            <option>Pimiento</option>
+            <option>Berenjena</option>
+            <option>Calabacín</option>
+            <option>Lechuga</option>
+            <option>Albahaca</option>
+          </select>
+          <label>Ubicación</label>
+          <select id="filtro-ubicacion" onchange="cargarDashboard()">
+            <option value="">Todas</option>
+          </select>
+          <button class="btn-refresh" onclick="cargarDashboard()">↻ Actualizar</button>
+        </div>
+
+        <div class="kpi-grid">
+          <div class="kpi-card kpi-verde">
+            <div class="kpi-label">Total bandejas</div>
+            <div class="kpi-value" id="kpi-total">—</div>
+            <div class="kpi-sub" id="kpi-periodo">período seleccionado</div>
+          </div>
+          <div class="kpi-card kpi-tierra">
+            <div class="kpi-label">Total alvéolos</div>
+            <div class="kpi-value" id="kpi-alveolos">—</div>
+            <div class="kpi-sub">plantas aprox.</div>
+          </div>
+          <div class="kpi-card kpi-marron">
+            <div class="kpi-label">Registros</div>
+            <div class="kpi-value" id="kpi-registros">—</div>
+            <div class="kpi-sub">entradas</div>
+          </div>
+          <div class="kpi-card kpi-azul">
+            <div class="kpi-label">Cultivos distintos</div>
+            <div class="kpi-value" id="kpi-cultivos">—</div>
+            <div class="kpi-sub">variedades</div>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <h3 id="chart-titulo">Bandejas por período</h3>
+          <div class="chart-wrap"><canvas id="chart-principal"></canvas></div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.25rem; margin-bottom:1.25rem;">
+          <div class="chart-card">
+            <h3>Por cultivo</h3>
+            <div class="chart-wrap"><canvas id="chart-cultivo"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <h3>Por tipo de bandeja</h3>
+            <div class="chart-wrap"><canvas id="chart-tipo"></canvas></div>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <h3>Últimos registros</h3>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Ubicación</th>
+                  <th>Cultivo</th>
+                  <th>Bandejas</th>
+                  <th>Tipo</th>
+                  <th>Comentarios</th>
+                </tr>
+              </thead>
+              <tbody id="tabla-registros">
+                <tr><td colspan="6" style="text-align:center; color:var(--texto-suave); padding:2rem;">Cargando…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div id="dash-empty" style="display:none; text-align:center; padding:3rem; color:var(--texto-suave);">
+        <div style="font-size:3rem; margin-bottom:1rem;">📋</div>
+        <p style="font-size:1rem;">No hay registros aún. <a href="#" onclick="showPage('registro')" style="color:var(--verde-claro); font-weight:600; text-decoration:none;">Añadir primero.</a></p>
+      </div>
+
+      <div id="dash-loading" class="loading-spinner">Cargando datos…</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const LETRAS = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'];
+const NUMEROS = [1,2,3,4];
+let supabaseClient = null;
+let granularidad = 'mes';
+let chartPrincipal = null, chartCultivo = null, chartTipo = null;
+
+// ─── SUPABASE CONFIG ───
+const SB_URL = 'https://jxzujjbdeycgbaaypdyp.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp4enVqamJkZXljZ2JhYXlwZHlwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5MzQ1MDYsImV4cCI6MjA4OTUxMDUwNn0.Jg2K2Y_J_TIdLlRGl38n11GG8vyEg3mzpG0PTMIEDOM';
+
+function initSupabase() {
+  if (!supabaseClient) {
+    supabaseClient = window.supabase.createClient(SB_URL, SB_KEY);
+  }
+  return true;
+}
+
+function saveSupabaseConfig() {}
+
+// ─── UBICACIONES ───
+function buildUbicaciones() {
+  const sel = document.getElementById('r-ubicacion');
+  sel.innerHTML = '<option value="">Seleccionar ubicación</option>';
+  const filtraSel = document.getElementById('filtro-ubicacion');
+  filtraSel.innerHTML = '<option value="">Todas</option>';
+  LETRAS.forEach(l => {
+    NUMEROS.forEach(n => {
+      const op = document.createElement('option');
+      op.value = l + n;
+      op.textContent = l + n;
+      sel.appendChild(op.cloneNode(true));
+      filtraSel.appendChild(op);
+    });
+  });
+}
+
+// ─── AUTH ───
+async function doLogin() {
+  if (!initSupabase()) {
+    showLoginConfig();
+    return;
+  }
+  const email = document.getElementById('login-email').value.trim();
+  const pass = document.getElementById('login-password').value;
+  const btn = document.getElementById('login-btn');
+  btn.disabled = true; btn.textContent = 'Entrando…';
+  const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password: pass });
+  btn.disabled = false; btn.textContent = 'Entrar';
+  if (error) {
+    document.getElementById('login-error').textContent = error.message;
+    document.getElementById('login-error').classList.add('show');
+    return;
+  }
+  document.getElementById('login-error').classList.remove('show');
+  document.getElementById('user-email-display').textContent = data.user.email;
+  showApp();
+}
+
+function showLoginConfig() {}
+function saveLoginConfig() {}
+
+
+
+async function doLogout() {
+  if (supabaseClient) await supabaseClient.auth.signOut();
+  location.reload();
+}
+
+function showApp() {
+  document.getElementById('login-page').style.display = 'none';
+  document.getElementById('app-shell').style.display = 'flex';
+}
+
+// ─── NAVEGACIÓN ───
+function showPage(page) {
+  document.querySelectorAll('.inner-page').forEach(p => p.classList.remove('active'));
+  if (page === 'menu') {
+    document.getElementById('menu-page').classList.add('active');
+  } else if (page === 'registro') {
+    document.getElementById('registro-inner').classList.add('active');
+    checkSupabaseSetup('registro');
+  } else if (page === 'dashboard') {
+    document.getElementById('dashboard-inner').classList.add('active');
+    checkSupabaseSetup('dashboard');
+    if (supabaseClient) initDashboard();
+  }
+}
+
+function checkSupabaseSetup(page) {
+  initSupabase();
+}
+
+// ─── REGISTRO ───
+async function guardarRegistro() {
+  if (!supabaseClient) { alert('Configura Supabase primero'); return; }
+  const fecha = document.getElementById('r-fecha').value;
+  const ubicacion = document.getElementById('r-ubicacion').value;
+  const cultivo = document.getElementById('r-cultivo').value;
+  const num = parseInt(document.getElementById('r-num').value);
+  const tipo = parseInt(document.getElementById('r-tipo').value);
+  const comentarios = document.getElementById('r-comentarios').value;
+
+  if (!fecha || !ubicacion || !cultivo || !num || !tipo) {
+    const err = document.getElementById('registro-error');
+    err.textContent = 'Rellena todos los campos obligatorios.';
+    err.style.display = 'block';
+    setTimeout(() => err.style.display = 'none', 3000);
+    return;
+  }
+
+  const btn = document.getElementById('btn-guardar');
+  btn.disabled = true; btn.textContent = 'Guardando…';
+
+  const { data: { user } } = await supabaseClient.auth.getUser();
+  const { error } = await supabaseClient.from('bandejas').insert([{
+    fecha, ubicacion, cultivo, num_bandejas: num, tipo_bandeja: tipo,
+    comentarios: comentarios || null, user_id: user.id
+  }]);
+
+  btn.disabled = false; btn.textContent = 'Guardar registro';
+
+  if (error) {
+    const err = document.getElementById('registro-error');
+    err.textContent = 'Error: ' + error.message;
+    err.style.display = 'block';
+    setTimeout(() => err.style.display = 'none', 5000);
+    return;
+  }
+
+  const ok = document.getElementById('registro-ok');
+  ok.classList.add('show');
+  setTimeout(() => ok.classList.remove('show'), 3000);
+
+  document.getElementById('r-ubicacion').value = '';
+  document.getElementById('r-cultivo').value = '';
+  document.getElementById('r-num').value = '';
+  document.getElementById('r-tipo').value = '';
+  document.getElementById('r-comentarios').value = '';
+  document.getElementById('r-fecha').value = new Date().toISOString().split('T')[0];
+}
+
+// ─── DASHBOARD ───
+function setGranularidad(g) {
+  granularidad = g;
+  ['semana','mes','anio'].forEach(x => {
+    document.getElementById('tab-' + x).classList.toggle('active', x === g);
+  });
+  cargarDashboard();
+}
+
+async function initDashboard() {
+  const anioSel = document.getElementById('filtro-anio');
+  anioSel.innerHTML = '';
+  const now = new Date().getFullYear();
+  for (let y = now; y >= now - 4; y--) {
+    const op = document.createElement('option');
+    op.value = y; op.textContent = y;
+    anioSel.appendChild(op);
+  }
+  await cargarDashboard();
+}
+
+async function cargarDashboard() {
+  if (!supabaseClient) return;
+  document.getElementById('dash-loading').style.display = 'block';
+  document.getElementById('dash-content').style.display = 'none';
+  document.getElementById('dash-empty').style.display = 'none';
+
+  const anio = document.getElementById('filtro-anio').value;
+  const cultivo = document.getElementById('filtro-cultivo').value;
+  const ubicacion = document.getElementById('filtro-ubicacion').value;
+
+  let query = supabaseClient.from('bandejas').select('*')
+    .gte('fecha', anio + '-01-01')
+    .lte('fecha', anio + '-12-31')
+    .order('fecha', { ascending: false });
+
+  if (cultivo) query = query.eq('cultivo', cultivo);
+  if (ubicacion) query = query.eq('ubicacion', ubicacion);
+
+  const { data, error } = await query;
+
+  document.getElementById('dash-loading').style.display = 'none';
+
+  if (error || !data || data.length === 0) {
+    document.getElementById('dash-empty').style.display = 'block';
+    return;
+  }
+
+  document.getElementById('dash-content').style.display = 'block';
+
+  // KPIs
+  const totalBandejas = data.reduce((s, r) => s + r.num_bandejas, 0);
+  const totalAlveolos = data.reduce((s, r) => s + r.num_bandejas * r.tipo_bandeja, 0);
+  const cultivosUnicos = new Set(data.map(r => r.cultivo)).size;
+  document.getElementById('kpi-total').textContent = totalBandejas.toLocaleString('es');
+  document.getElementById('kpi-alveolos').textContent = totalAlveolos.toLocaleString('es');
+  document.getElementById('kpi-registros').textContent = data.length;
+  document.getElementById('kpi-cultivos').textContent = cultivosUnicos;
+  document.getElementById('kpi-periodo').textContent = 'año ' + anio;
+
+  // Gráfico principal
+  renderChartPrincipal(data, anio);
+  renderChartCultivo(data);
+  renderChartTipo(data);
+  renderTabla(data.slice(0, 50));
+}
+
+function agrupar(data, granularidad) {
+  const grupos = {};
+  data.forEach(r => {
+    const d = new Date(r.fecha);
+    let key;
+    if (granularidad === 'semana') {
+      const startOfYear = new Date(d.getFullYear(), 0, 1);
+      const week = Math.ceil(((d - startOfYear) / 86400000 + startOfYear.getDay() + 1) / 7);
+      key = 'S' + String(week).padStart(2, '0');
+    } else if (granularidad === 'mes') {
+      key = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'][d.getMonth()];
+    } else {
+      key = d.getFullYear().toString();
+    }
+    grupos[key] = (grupos[key] || 0) + r.num_bandejas;
+  });
+  return grupos;
+}
+
+function renderChartPrincipal(data, anio) {
+  const grupos = agrupar(data, granularidad);
+  let labels, values;
+  if (granularidad === 'mes') {
+    labels = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+    values = labels.map(m => grupos[m] || 0);
+  } else {
+    labels = Object.keys(grupos).sort();
+    values = labels.map(k => grupos[k]);
+  }
+
+  const tituloMap = { semana: 'Bandejas por semana', mes: 'Bandejas por mes', anio: 'Bandejas por año' };
+  document.getElementById('chart-titulo').textContent = tituloMap[granularidad] + ' — ' + anio;
+
+  if (chartPrincipal) chartPrincipal.destroy();
+  const ctx = document.getElementById('chart-principal').getContext('2d');
+  chartPrincipal = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Bandejas',
+        data: values,
+        backgroundColor: '#4a8c3f',
+        borderRadius: 6,
+        borderSkipped: false
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ' ' + ctx.parsed.y.toLocaleString('es') + ' bandejas' } } },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+        y: { grid: { color: '#f0ece4' }, ticks: { font: { size: 11 } } }
+      }
+    }
+  });
+}
+
+function renderChartCultivo(data) {
+  const grupos = {};
+  data.forEach(r => { grupos[r.cultivo] = (grupos[r.cultivo] || 0) + r.num_bandejas; });
+  const labels = Object.keys(grupos);
+  const values = labels.map(k => grupos[k]);
+  const colores = ['#4a8c3f','#7ab870','#2d5a25','#c49a2e','#8b6914','#5c9e50','#a3d695','#1f3d1a','#e6c96a','#3d7032'];
+
+  if (chartCultivo) chartCultivo.destroy();
+  const ctx = document.getElementById('chart-cultivo').getContext('2d');
+  chartCultivo = new Chart(ctx, {
+    type: 'doughnut',
+    data: { labels, datasets: [{ data: values, backgroundColor: colores.slice(0, labels.length), borderWidth: 2, borderColor: '#faf8f4' }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom', labels: { font: { size: 11 }, padding: 12, boxWidth: 12 } } }
+    }
+  });
+}
+
+function renderChartTipo(data) {
+  const grupos = { 75: 0, 150: 0, 294: 0 };
+  data.forEach(r => { grupos[r.tipo_bandeja] = (grupos[r.tipo_bandeja] || 0) + r.num_bandejas; });
+
+  if (chartTipo) chartTipo.destroy();
+  const ctx = document.getElementById('chart-tipo').getContext('2d');
+  chartTipo = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['75 alvéolos', '150 alvéolos', '294 alvéolos'],
+      datasets: [{ label: 'Bandejas', data: [grupos[75], grupos[150], grupos[294]], backgroundColor: ['#7ab870','#4a8c3f','#2d5a25'], borderRadius: 6 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+      plugins: { legend: { display: false } },
+      scales: { x: { grid: { color: '#f0ece4' } }, y: { grid: { display: false } } }
+    }
+  });
+}
+
+function renderTabla(data) {
+  const tbody = document.getElementById('tabla-registros');
+  if (!data.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--texto-suave); padding:2rem;">Sin datos</td></tr>'; return; }
+  tbody.innerHTML = data.map(r => `
+    <tr>
+      <td>${new Date(r.fecha).toLocaleDateString('es-ES')}</td>
+      <td><span class="badge badge-verde">${r.ubicacion}</span></td>
+      <td>${r.cultivo}</td>
+      <td><strong>${r.num_bandejas}</strong></td>
+      <td><span class="badge badge-tierra">${r.tipo_bandeja}</span></td>
+      <td style="color:var(--texto-suave); font-size:0.83rem; max-width:180px; overflow:hidden; text-overflow:ellipsis;">${r.comentarios || '—'}</td>
+    </tr>
+  `).join('');
+}
+
+// ─── INIT ───
+window.addEventListener('DOMContentLoaded', () => {
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('r-fecha').value = today;
+  buildUbicaciones();
+
+  const hasConfig = initSupabase();
+  if (hasConfig) {
+    supabaseClient.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        document.getElementById('user-email-display').textContent = session.user.email;
+        showApp();
+      }
+    });
+  }
+});
+</script>
+</body>
+</html>
