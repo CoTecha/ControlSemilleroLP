@@ -981,10 +981,11 @@ async function doLogout() {
 function showApp() {
   document.getElementById('login-page').style.display = 'none';
   document.getElementById('app-shell').style.display = 'flex';
+  history.replaceState({ page: 'menu' }, '', '#menu');
 }
 
 // ─── NAVEGACIÓN ───
-function showPage(page) {
+function showPage(page, addHistory = true) {
   document.querySelectorAll('.inner-page').forEach(p => p.classList.remove('active'));
   if (page === 'menu') {
     document.getElementById('menu-page').classList.add('active');
@@ -996,7 +997,15 @@ function showPage(page) {
     checkSupabaseSetup('dashboard');
     if (supabaseClient) initDashboard();
   }
+  if (addHistory) {
+    history.pushState({ page }, '', '#' + page);
+  }
 }
+
+window.addEventListener('popstate', e => {
+  const page = e.state ? e.state.page : 'menu';
+  showPage(page, false);
+});
 
 function checkSupabaseSetup(page) {
   initSupabase();
